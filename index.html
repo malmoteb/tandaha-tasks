@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تنمية تندحة | متابعة مهام المدير التنفيذي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+:root{
+  --purple:#4b2a7e;
+  --purple-dark:#3a2063;
+  --purple-light:#f0eaf8;
+  --teal:#1aa6a0;
+  --teal-dark:#0f7d79;
+  --teal-light:#e2f5f4;
+  --coral:#f0585a;
+  --coral-dark:#d13f41;
+  --coral-light:#fdecec;
+  --ink:#2b2440;
+  --muted:#7a7390;
+  --bg:#faf8fd;
+  --card:#ffffff;
+  --border:#ece6f5;
+  --shadow:0 10px 30px rgba(75,42,126,.09);
+  --radius:18px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Cairo','Tajawal',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+a{color:inherit}
+/* ===== Header ===== */
+.topbar{background:linear-gradient(135deg,var(--purple-dark) 0%,var(--purple) 55%,#5e35a0 100%);color:#fff;padding:0;position:sticky;top:0;z-index:50;box-shadow:0 4px 20px rgba(0,0,0,.15)}
+.topbar-inner{max-width:1280px;margin:auto;display:flex;align-items:center;gap:18px;padding:14px 20px}
+.logo-box{background:#fff;border-radius:16px;padding:8px 12px;display:flex;align-items:center;gap:12px;min-width:0;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.logo-box img{height:62px;width:auto;object-fit:contain;display:block}
+.logo-fallback{display:none;text-align:right;line-height:1.1}
+.logo-fallback b{display:block;color:var(--purple);font-size:22px;font-weight:900}
+.logo-fallback span{display:block;color:var(--coral);font-size:20px;font-weight:900}
+.logo-fallback small{display:block;color:var(--teal-dark);font-size:12px;font-weight:700}
+.title-wrap{flex:1;min-width:0}
+.title-wrap h1{margin:0;font-size:24px;font-weight:900}
+.title-wrap p{margin:2px 0 0;opacity:.9;font-size:14px}
+.today-chip{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:8px 16px;font-size:13px;font-weight:700;white-space:nowrap}
+.today-chip i{margin-left:6px;color:#7ef0eb}
+/* accent strip */
+.strip{display:flex;height:6px}
+.strip span{flex:1}
+.strip span:nth-child(1){background:var(--teal)}
+.strip span:nth-child(2){background:var(--purple)}
+.strip span:nth-child(3){background:var(--coral)}
+.strip span:nth-child(4){background:#2aa8a3}
+.strip span:nth-child(5){background:var(--purple-dark)}
+.container{max-width:1280px;margin:auto;padding:22px 20px 60px}
+/* ===== Stats ===== */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin:20px 0}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);display:flex;gap:12px;align-items:center;position:relative;overflow:hidden}
+.stat::after{content:"";position:absolute;right:0;top:0;bottom:0;width:5px}
+.stat.s1::after{background:var(--purple)} .stat.s2::after{background:var(--teal)}
+.stat.s3::after{background:var(--coral)} .stat.s4::after{background:#f5a623}
+.stat.s5::after{background:#22c55e}
+.stat .ic{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;font-size:20px;color:#fff;flex-shrink:0}
+.s1 .ic{background:linear-gradient(135deg,var(--purple),#7a5dc7)} .s2 .ic{background:linear-gradient(135deg,var(--teal),#4dd6d0)}
+.s3 .ic{background:linear-gradient(135deg,var(--coral),#ff8a7a)} .s4 .ic{background:linear-gradient(135deg,#f5a623,#ffd47a)}
+.s5 .ic{background:linear-gradient(135deg,#16a34a,#5eead4)}
+.stat b{font-size:26px;line-height:1;display:block}
+.stat small{color:var(--muted);font-weight:700;font-size:13px}
+/* ===== Toolbar ===== */
+.toolbar{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{border:0;border-radius:12px;padding:11px 18px;font-family:inherit;font-weight:800;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:.18s}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:linear-gradient(135deg,var(--purple),#6a45b5);color:#fff}
+.btn-primary:hover{filter:brightness(1.08)}
+.btn-teal{background:linear-gradient(135deg,var(--teal),#2ecbc5);color:#fff}
+.btn-coral{background:linear-gradient(135deg,var(--coral),#ff7b6b);color:#fff}
+.btn-ghost{background:var(--purple-light);color:var(--purple)}
+.btn-outline{background:#fff;border:2px solid var(--border);color:var(--ink)}
+.btn-outline:hover{border-color:var(--purple)}
+.search{flex:1;min-width:200px;position:relative}
+.search input{width:100%;padding:11px 40px 11px 14px;border:2px solid var(--border);border-radius:12px;font-family:inherit;font-size:14px;outline:none}
+.search input:focus{border-color:var(--teal)}
+.search i{position:absolute;right:13px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.filters{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.filters select{padding:10px 14px;border:2px solid var(--border);border-radius:12px;font-family:inherit;font-weight:700;font-size:13px;background:#fff;cursor:pointer}
+/* ===== Table ===== */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);margin-top:16px;overflow:hidden}
+.table-head{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:linear-gradient(to left,#faf7ff,#fff)}
+.table-head h3{margin:0;font-size:17px}
+.table-head h3 i{color:var(--teal);margin-left:8px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:1050px;font-size:14px}
+thead th{background:#f8f5ff;color:var(--purple-dark);padding:13px 12px;text-align:right;font-size:13px;white-space:nowrap;border-bottom:2px solid var(--border)}
+tbody td{padding:13px 12px;border-bottom:1px solid #f1ecf9;vertical-align:middle}
+tbody tr:hover{background:#fcfaff}
+.task-title{font-weight:800;max-width:240px}
+.task-desc{color:var(--muted);font-size:12px;max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:800;white-space:nowrap}
+.p-crit{background:var(--coral-light);color:var(--coral-dark);border:1px solid #f9c2c3}
+.p-high{background:#fff4e5;color:#b45309;border:1px solid #fed7aa}
+.p-mid{background:var(--teal-light);color:var(--teal-dark);border:1px solid #a9e6e3}
+.p-low{background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1}
+.st{background:var(--purple-light);color:var(--purple);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:800;white-space:nowrap;border:1px solid #d6c9f0}
+.st.done{background:#dcfce7;color:#15803d;border-color:#86efac}
+.st.work{background:#fef9c3;color:#a16207;border-color:#fde047}
+.st.late{background:var(--coral-light);color:var(--coral-dark);border-color:#f9c2c3}
+.count{display:inline-flex;align-items:center;gap:7px;font-weight:800;font-size:13px;border-radius:10px;padding:7px 11px;white-space:nowrap}
+.count i{font-size:13px}
+.c-ok{background:#dcfce7;color:#15803d} .c-warn{background:#fef9c3;color:#a16207}
+.c-danger{background:var(--coral-light);color:var(--coral-dark)} .c-done{background:#ede9fe;color:var(--purple)}
+.date-cell{font-weight:700;white-space:nowrap}
+.date-cell small{display:block;color:var(--muted);font-weight:600;font-size:11px}
+.owner{display:flex;align-items:center;gap:8px;font-weight:700;white-space:nowrap}
+.avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:900;font-size:14px;flex-shrink:0}
+.actions{display:flex;gap:6px}
+.icon-btn{width:34px;height:34px;border-radius:10px;border:1px solid var(--border);background:#fff;cursor:pointer;display:grid;place-items:center;font-size:14px;transition:.15s}
+.icon-btn:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(0,0,0,.1)}
+.ib-view{color:var(--teal-dark)} .ib-edit{color:var(--purple)} .ib-done{color:#16a34a} .ib-del{color:var(--coral-dark)}
+.empty{padding:60px 20px;text-align:center;color:var(--muted)}
+.empty i{font-size:52px;color:#d9d0ef;margin-bottom:12px}
+/* ===== Modal ===== */
+.overlay{position:fixed;inset:0;background:rgba(43,25,80,.55);backdrop-filter:blur(4px);display:none;align-items:flex-start;justify-content:center;z-index:100;padding:24px;overflow-y:auto}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:22px;max-width:680px;width:100%;box-shadow:0 25px 70px rgba(0,0,0,.3);overflow:hidden;animation:pop .25s ease}
+@keyframes pop{from{transform:translateY(24px) scale(.98);opacity:0}}
+.modal-head{background:linear-gradient(135deg,var(--purple-dark),var(--purple) 60%,#6a45b5);color:#fff;padding:20px 24px;display:flex;align-items:center;justify-content:space-between}
+.modal-head h3{margin:0;font-size:18px} .modal-head h3 i{margin-left:8px;color:#7ef0eb}
+.modal-head button{background:rgba(255,255,255,.2);border:0;color:#fff;width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:16px}
+.modal-body{padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+.field label{font-weight:800;font-size:13px;color:var(--purple-dark)}
+.field label i{color:var(--teal);margin-left:6px}
+.field input,.field select,.field textarea{padding:11px 13px;border:2px solid var(--border);border-radius:12px;font-family:inherit;font-size:14px;outline:none;background:#fdfcff}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--teal);background:#fff}
+.field textarea{resize:vertical;min-height:70px}
+input[type="date"]{cursor:pointer}
+.drop{border:2px dashed var(--teal);border-radius:12px;background:#f4fffe;padding:18px;text-align:center;cursor:pointer;transition:.15s}
+.drop:hover{background:var(--teal-light)}
+.drop i{font-size:26px;color:var(--teal)}
+.drop small{display:block;color:var(--muted);margin-top:6px;font-size:12px}
+.file-list{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.file-item{display:flex;align-items:center;gap:8px;background:#f8f5ff;border:1px solid var(--border);border-radius:10px;padding:7px 10px;font-size:12px;font-weight:700}
+.file-item button{margin-right:auto;background:var(--coral-light);border:0;color:var(--coral-dark);border-radius:8px;cursor:pointer;padding:4px 8px}
+.modal-foot{padding:16px 24px 22px;display:flex;gap:10px;justify-content:flex-start;border-top:1px solid var(--border);background:#faf8ff}
+/* toast */
+#toast{position:fixed;bottom:24px;right:50%;transform:translateX(50%) translateY(120px);background:var(--ink);color:#fff;padding:13px 24px;border-radius:14px;font-weight:800;font-size:14px;z-index:200;transition:.3s;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+#toast.show{transform:translateX(50%) translateY(0)}
+footer{text-align:center;color:var(--muted);font-size:12px;margin-top:26px;font-weight:600}
+@media(max-width:1000px){.stats{grid-template-columns:repeat(2,1fr)}.topbar-inner{flex-wrap:wrap}.modal-body{grid-template-columns:1fr}}
+@media(max-width:600px){.stats{grid-template-columns:1fr 1fr}.title-wrap h1{font-size:18px}.logo-box img{height:48px}}
+@media print{.topbar,.toolbar,.filters,.actions,.modal,.overlay,#toast,footer,.no-print{display:none!important}.card{box-shadow:none;border:1px solid #000}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="logo-box">
+      <img id="siteLogo" src="logo.JPG" alt="شعار تنمية تندحة" onerror="var c=['logo.JPG','logo.jpg','logo.png','logo.jpeg','logo.Jpg'];var i=+(this.dataset.i||0);if(i<c.length-1){i++;this.dataset.i=i;this.src=c[i]}else{this.style.display='none';document.getElementById('logoFallback').style.display='block'}">
+      <div class="logo-fallback" id="logoFallback">
+        <b>تنميــة</b><span>تندحــة</span><small>جمعية أهلية برقم 4485</small>
+      </div>
+    </div>
+    <div class="title-wrap">
+      <h1><i class="fa-solid fa-clipboard-check"></i> متابعة مهام المدير التنفيذي</h1>
+      <p>جمعية تنمية تندحة الأهلية — برقم 4485 | لوحة التحكم والمتابعة</p>
+    </div>
+    <div class="today-chip"><i class="fa-solid fa-calendar-day"></i><span id="todayLabel"></span></div>
+  </div>
+  <div class="strip"><span></span><span></span><span></span><span></span><span></span></div>
+</header>
+
+<div class="container">
+
+  <!-- إحصائيات -->
+  <section class="stats">
+    <div class="stat s1"><div class="ic"><i class="fa-solid fa-list-check"></i></div><div><b id="stTotal">0</b><small>إجمالي المهام</small></div></div>
+    <div class="stat s2"><div class="ic"><i class="fa-solid fa-hourglass-half"></i></div><div><b id="stPending">0</b><small>قيد التنفيذ</small></div></div>
+    <div class="stat s3"><div class="ic"><i class="fa-solid fa-triangle-exclamation"></i></div><div><b id="stOverdue">0</b><small>متأخرة</small></div></div>
+    <div class="stat s4"><div class="ic"><i class="fa-solid fa-fire"></i></div><div><b id="stUrgent">0</b><small>مهم جداً</small></div></div>
+    <div class="stat s5"><div class="ic"><i class="fa-solid fa-circle-check"></i></div><div><b id="stDone">0</b><small>منجزة</small></div></div>
+  </section>
+
+  <!-- شريط الأدوات -->
+  <section class="toolbar no-print">
+    <button class="btn btn-primary" onclick="openModal()"><i class="fa-solid fa-plus"></i> إضافة مهمة يدوياً</button>
+    <label class="btn btn-teal" style="cursor:pointer"><i class="fa-solid fa-file-import"></i> استيراد من ملف
+      <input type="file" id="importFile" accept=".xlsx,.xls,.csv" hidden onchange="importTasks(event)">
+    </label>
+    <button class="btn btn-ghost" onclick="downloadTemplate()"><i class="fa-solid fa-download"></i> نموذج الاستيراد</button>
+    <div class="search"><i class="fa-solid fa-magnifying-glass"></i><input id="q" placeholder="بحث باسم المهمة أو المسؤول..." oninput="render()"></div>
+    <button class="btn btn-coral" onclick="toggleReportMenu()"><i class="fa-solid fa-file-export"></i> تقرير <i class="fa-solid fa-caret-down"></i></button>
+    <div id="reportMenu" style="display:none;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-outline" onclick="exportExcel()"><i class="fa-solid fa-file-excel" style="color:#16a34a"></i> XLS</button>
+      <button class="btn btn-outline" onclick="exportPDF()"><i class="fa-solid fa-file-pdf" style="color:var(--coral)"></i> PDF</button>
+      <button class="btn btn-outline" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة</button>
+    </div>
+  </section>
+
+  <section class="filters no-print">
+    <select id="fPriority" onchange="render()">
+      <option value="">كل الأولويات</option>
+      <option>مهم جداً</option><option>مهم</option><option>متوسط الأهمية</option><option>غير مهم</option>
+    </select>
+    <select id="fStatus" onchange="render()">
+      <option value="">كل الحالات</option>
+      <option value="pending">قيد التنفيذ</option>
+      <option value="done">منجزة</option>
+      <option value="overdue">متأخرة</option>
+    </select>
+    <select id="fOwner" onchange="render()"><option value="">كل المسؤولين</option></select>
+    <select id="fSort" onchange="render()">
+      <option value="date">ترتيب: الأقرب تنفيذاً</option>
+      <option value="priority">ترتيب: الأولوية</option>
+      <option value="newest">ترتيب: الأحدث</option>
+    </select>
+  </section>
+
+  <!-- الجدول -->
+  <section class="card">
+    <div class="table-head">
+      <h3><i class="fa-solid fa-table-list"></i> سجل المهام <span id="countLabel" style="color:var(--muted);font-size:13px"></span></h3>
+      <button class="btn btn-ghost no-print" onclick="clearDone()" title="حذف المنجز"><i class="fa-solid fa-broom"></i> تنظيف المنجز</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th><i class="fa-solid fa-thumbtack"></i> المهمة</th>
+          <th><i class="fa-solid fa-calendar-days"></i> تاريخ التنفيذ</th>
+          <th><i class="fa-solid fa-hourglass-start"></i> المتبقي من اليوم</th>
+          <th><i class="fa-solid fa-flag"></i> الأولوية</th>
+          <th><i class="fa-solid fa-user-tie"></i> مسؤول التنفيذ</th>
+          <th><i class="fa-solid fa-paperclip"></i> شاهد التنفيذ</th>
+          <th><i class="fa-solid fa-signal"></i> الحالة</th>
+          <th class="no-print"><i class="fa-solid fa-gear"></i> إجراءات</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="empty" id="emptyBox" style="display:none">
+        <i class="fa-solid fa-folder-open"></i>
+        <h3 style="margin:6px 0">لا توجد مهام مطابقة</h3>
+        <p>أضف مهمة جديدة أو استورد من ملف Excel</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>جمعية تنمية تندحة الأهلية — نظام المتابعة الداخلي • تُحفظ البيانات محلياً في المتصفح • <span id="year"></span></footer>
+</div>
+
+<!-- نافذة إضافة / تعديل -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-head">
+      <h3><i class="fa-solid fa-plus-circle"></i> <span id="modalTitle">إضافة مهمة جديدة</span></h3>
+      <button onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="field full"><label><i class="fa-solid fa-thumbtack"></i> اسم المهمة *</label><input id="inTitle" placeholder="مثال: تجهيز تقرير الربع الثالث"></div>
+      <div class="field full"><label><i class="fa-solid fa-align-right"></i> وصف المهمة</label><textarea id="inDesc" placeholder="تفاصيل إضافية..."></textarea></div>
+      <div class="field"><label><i class="fa-solid fa-calendar-days"></i> تاريخ التنفيذ * (من التقويم)</label><input type="date" id="inDate"></div>
+      <div class="field"><label><i class="fa-solid fa-flag"></i> أولوية المهمة *</label>
+        <select id="inPriority"><option>مهم جداً</option><option selected>مهم</option><option>متوسط الأهمية</option><option>غير مهم</option></select>
+      </div>
+      <div class="field"><label><i class="fa-solid fa-user-tie"></i> مسؤول التنفيذ *</label><input id="inOwner" placeholder="اسم المسؤول" list="ownersList"><datalist id="ownersList"></datalist></div>
+      <div class="field"><label><i class="fa-solid fa-signal"></i> الحالة</label>
+        <select id="inStatus"><option value="pending">قيد التنفيذ</option><option value="done">منجزة</option></select>
+      </div>
+      <div class="field full"><label><i class="fa-solid fa-paperclip"></i> شاهد التنفيذ (PDF / PNG / JPG)</label>
+        <div class="drop" onclick="document.getElementById('inFiles').click()">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <b>اضغط لرفع الشواهد</b>
+          <small>يقبل PDF و PNG و JPG — يمكن إرفاق أكثر من ملف</small>
+        </div>
+        <input type="file" id="inFiles" hidden multiple accept=".pdf,.png,.jpg,.jpeg" onchange="handleFiles(this)">
+        <div class="file-list" id="fileList"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary" onclick="saveTask()"><i class="fa-solid fa-floppy-disk"></i> حفظ المهمة</button>
+      <button class="btn btn-outline" onclick="closeModal()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const LS='tandaha_tasks_v1';
+let tasks=load(); let editingId=null; let pendingFiles=[];
+const AV_COLORS=['#4b2a7e','#1aa6a0','#f0585a','#f5a623','#0ea5e9','#8b5cf6','#ec4899'];
+function load(){try{return JSON.parse(localStorage.getItem(LS))||seed()}catch(e){return seed()}}
+function persist(){localStorage.setItem(LS,JSON.stringify(tasks))}
+function seed(){return[
+ {id:uid(),title:'اعتماد خطة الأنشطة للربع القادم',desc:'مراجعة الخطة مع مجلس الإدارة واعتمادها',date:addDays(2),priority:'مهم جداً',owner:'المدير التنفيذي',status:'pending',files:[],created:Date.now()-86400000},
+ {id:uid(),title:'رفع تقرير الأداء الشهري',desc:'تقرير الإنجاز + الشواهد',date:addDays(5),priority:'مهم',owner:'مدير المشاريع',status:'pending',files:[],created:Date.now()-172800000},
+ {id:uid(),title:'تجهيز ملف الحوكمة',desc:'استكمال المستندات النظامية',date:addDays(-1),priority:'متوسط الأهمية',owner:'الشؤون الإدارية',status:'pending',files:[],created:Date.now()-259200000}
+]}
+function uid(){return 't'+Date.now().toString(36)+Math.floor(Math.random()*999)}
+function addDays(n){const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
+function todayStr(){return new Date().toISOString().slice(0,10)}
+function daysLeft(dateStr){const t=new Date(todayStr()),d=new Date(dateStr);return Math.round((d-t)/86400000)}
+function fmtDate(s){if(!s)return'—';const d=new Date(s+'T00:00:00');return d.toLocaleDateString('ar-SA',{year:'numeric',month:'long',day:'numeric'})}
+function weekday(s){const d=new Date(s+'T00:00:00');return d.toLocaleDateString('ar-SA',{weekday:'long'})}
+function avatarColor(n){let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))%997;return AV_COLORS[h%AV_COLORS.length]}
+function initials(n){return (n||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('')}
+
+/* ===== render ===== */
+function render(){
+  const q=(document.getElementById('q').value||'').trim();
+  const fp=document.getElementById('fPriority').value, fs=document.getElementById('fStatus').value,
+        fo=document.getElementById('fOwner').value, sort=document.getElementById('fSort').value;
+  // owners dropdown
+  const owners=[...new Set(tasks.map(t=>t.owner).filter(Boolean))];
+  const foSel=document.getElementById('fOwner'); const cur=foSel.value;
+  foSel.innerHTML='<option value="">كل المسؤولين</option>'+owners.map(o=>`<option ${o===cur?'selected':''}>${o}</option>`).join('');
+  document.getElementById('ownersList').innerHTML=owners.map(o=>`<option value="${o}">`).join('');
+
+  let list=[...tasks];
+  if(q) list=list.filter(t=>(t.title+t.owner+(t.desc||'')).includes(q));
+  if(fp) list=list.filter(t=>t.priority===fp);
+  if(fo) list=list.filter(t=>t.owner===fo);
+  if(fs==='done') list=list.filter(t=>t.status==='done');
+  if(fs==='pending') list=list.filter(t=>t.status!=='done'&&daysLeft(t.date)>=0);
+  if(fs==='overdue') list=list.filter(t=>t.status!=='done'&&daysLeft(t.date)<0);
+  const pw={'مهم جداً':0,'مهم':1,'متوسط الأهمية':2,'غير مهم':3};
+  if(sort==='date') list.sort((a,b)=>a.date.localeCompare(b.date));
+  if(sort==='priority') list.sort((a,b)=>(pw[a.priority]??9)-(pw[b.priority]??9)||a.date.localeCompare(b.date));
+  if(sort==='newest') list.sort((a,b)=>(b.created||0)-(a.created||0));
+
+  const tb=document.getElementById('tbody');
+  document.getElementById('emptyBox').style.display=list.length?'none':'block';
+  document.getElementById('countLabel').textContent=`(${list.length} مهمة)`;
+  tb.innerHTML=list.map(t=>{
+    const dl=daysLeft(t.date); const done=t.status==='done';
+    let cnt;
+    if(done) cnt=`<span class="count c-done"><i class="fa-solid fa-check"></i> منجزة</span>`;
+    else if(dl<0) cnt=`<span class="count c-danger"><i class="fa-solid fa-triangle-exclamation"></i> متأخر ${Math.abs(dl)} يوم</span>`;
+    else if(dl===0) cnt=`<span class="count c-warn"><i class="fa-solid fa-bell"></i> يستحق اليوم</span>`;
+    else if(dl===1) cnt=`<span class="count c-warn"><i class="fa-solid fa-hourglass-half"></i> بقي يوم واحد</span>`;
+    else if(dl<=3) cnt=`<span class="count c-warn"><i class="fa-solid fa-hourglass-half"></i> بقي ${dl} أيام</span>`;
+    else cnt=`<span class="count c-ok"><i class="fa-solid fa-calendar-check"></i> بقي ${dl} يوم</span>`;
+    const pc=t.priority==='مهم جداً'?'p-crit':t.priority==='مهم'?'p-high':t.priority==='متوسط الأهمية'?'p-mid':'p-low';
+    const stH=done?'<span class="st done">منجزة</span>':dl<0?'<span class="st late">متأخرة</span>':'<span class="st work">قيد التنفيذ</span>';
+    const files=(t.files||[]).map((f,i)=>`<a href="${f.data}" download="${f.name}" title="${f.name}" style="display:inline-flex;align-items:center;gap:4px;background:var(--teal-light);color:var(--teal-dark);border-radius:8px;padding:4px 9px;font-size:11px;font-weight:800;text-decoration:none;margin:1px"><i class="fa-solid fa-${f.name.toLowerCase().endsWith('.pdf')?'file-pdf':'file-image'}"></i>${esc(shortName(f.name))}</a>`).join('')||'<span style="color:var(--muted);font-size:12px">—</span>';
+    return `<tr>
+      <td><div class="task-title">${esc(t.title)}</div><div class="task-desc">${esc(t.desc||'')}</div></td>
+      <td><div class="date-cell">📅 ${fmtDate(t.date)}<small>${weekday(t.date)}</small></div></td>
+      <td>${cnt}</td>
+      <td><span class="pill ${pc}"><i class="fa-solid fa-flag"></i>${t.priority}</span></td>
+      <td><div class="owner"><span class="avatar" style="background:${avatarColor(t.owner)}">${esc(initials(t.owner))}</span>${esc(t.owner)}</div></td>
+      <td>${files}</td>
+      <td>${stH}</td>
+      <td class="no-print"><div class="actions">
+        <button class="icon-btn ib-done" title="إنجاز" onclick="toggleDone('${t.id}')"><i class="fa-solid fa-check"></i></button>
+        <button class="icon-btn ib-edit" title="تعديل" onclick="editTask('${t.id}')"><i class="fa-solid fa-pen"></i></button>
+        <button class="icon-btn ib-del" title="حذف" onclick="delTask('${t.id}')"><i class="fa-solid fa-trash"></i></button>
+      </div></td>
+    </tr>`}).join('');
+  // stats
+  document.getElementById('stTotal').textContent=tasks.length;
+  document.getElementById('stPending').textContent=tasks.filter(t=>t.status!=='done').length;
+  document.getElementById('stOverdue').textContent=tasks.filter(t=>t.status!=='done'&&daysLeft(t.date)<0).length;
+  document.getElementById('stUrgent').textContent=tasks.filter(t=>t.priority==='مهم جداً'&&t.status!=='done').length;
+  document.getElementById('stDone').textContent=tasks.filter(t=>t.status==='done').length;
+}
+function esc(s){return (s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function shortName(n){return n.length>16?'…'+n.slice(-15):n}
+
+/* ===== modal ===== */
+function openModal(){editingId=null;pendingFiles=[];document.getElementById('modalTitle').textContent='إضافة مهمة جديدة';
+ ['inTitle','inDesc','inOwner'].forEach(id=>document.getElementById(id).value='');
+ document.getElementById('inDate').value=todayStr();document.getElementById('inPriority').value='مهم';
+ document.getElementById('inStatus').value='pending';document.getElementById('inFiles').value='';renderFileList();
+ document.getElementById('overlay').classList.add('open')}
+function closeModal(){document.getElementById('overlay').classList.remove('open')}
+function editTask(id){const t=tasks.find(x=>x.id===id);if(!t)return;editingId=id;pendingFiles=[...(t.files||[])];
+ document.getElementById('modalTitle').textContent='تعديل المهمة';
+ document.getElementById('inTitle').value=t.title;document.getElementById('inDesc').value=t.desc||'';
+ document.getElementById('inDate').value=t.date;document.getElementById('inPriority').value=t.priority;
+ document.getElementById('inOwner').value=t.owner;document.getElementById('inStatus').value=t.status;
+ renderFileList();document.getElementById('overlay').classList.add('open')}
+function handleFiles(inp){[...inp.files].forEach(f=>{
+  if(!/\.(pdf|png|jpe?g)$/i.test(f.name))return toast('ملف مرفوض: '+f.name+' (PDF/PNG/JPG فقط)');
+  if(f.size>2.5*1024*1024)return toast('الملف كبير (أقصى 2.5MB): '+f.name);
+  const r=new FileReader();r.onload=e=>{pendingFiles.push({name:f.name,data:e.target.result});renderFileList()};r.readAsDataURL(f)});
+ inp.value=''}
+function renderFileList(){document.getElementById('fileList').innerHTML=pendingFiles.map((f,i)=>
+ `<div class="file-item"><i class="fa-solid fa-paperclip" style="color:var(--teal)"></i>${esc(f.name)}<button onclick="pendingFiles.splice(${i},1);renderFileList()">حذف</button></div>`).join('')}
+function saveTask(){
+  const title=document.getElementById('inTitle').value.trim(),
+        date=document.getElementById('inDate').value,
+        owner=document.getElementById('inOwner').value.trim(),
+        priority=document.getElementById('inPriority').value,
+        status=document.getElementById('inStatus').value,
+        desc=document.getElementById('inDesc').value.trim();
+  if(!title)return toast('فضلاً أدخل اسم المهمة');
+  if(!date)return toast('فضلاً اختر تاريخ التنفيذ من التقويم');
+  if(!owner)return toast('فضلاً أدخل مسؤول التنفيذ');
+  if(editingId){const t=tasks.find(x=>x.id===editingId);Object.assign(t,{title,date,owner,priority,status,desc,files:[...pendingFiles]});toast('تم تحديث المهمة ✅')}
+  else{tasks.unshift({id:uid(),title,date,owner,priority,status,desc,files:[...pendingFiles],created:Date.now()});toast('تمت إضافة المهمة ✅')}
+  persist();closeModal();render()}
+function toggleDone(id){const t=tasks.find(x=>x.id===id);t.status=t.status==='done'?'pending':'done';persist();render();toast(t.status==='done'?'أُنجزت المهمة 🎉':'أُعيدت لقيد التنفيذ')}
+function delTask(id){if(!confirm('حذف هذه المهمة؟'))return;tasks=tasks.filter(x=>x.id!==id);persist();render();toast('تم الحذف')}
+function clearDone(){if(!tasks.some(t=>t.status==='done'))return toast('لا توجد مهام منجزة');if(!confirm('حذف كل المهام المنجزة؟'))return;tasks=tasks.filter(t=>t.status!=='done');persist();render()}
+
+/* ===== import ===== */
+function importTasks(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();
+ r.onload=ev=>{try{const wb=XLSX.read(ev.target.result,{type:'array'});const ws=wb.Sheets[wb.SheetNames[0]];
+  const rows=XLSX.utils.sheet_to_json(ws);let n=0;
+  rows.forEach(row=>{const title=row['المهمة']||row['Task']||row['title']||row['اسم المهمة'];
+   if(!title)return;let d=row['التاريخ']||row['تاريخ التنفيذ']||row['Date']||todayStr();
+   if(typeof d==='number')d=XLSX.SSF.format('yyyy-mm-dd',d);
+   tasks.unshift({id:uid(),title:String(title),desc:String(row['الوصف']||row['Description']||''),date:String(d).slice(0,10),
+    priority:['مهم جداً','مهم','متوسط الأهمية','غير مهم'].includes(row['الأولوية'])?row['الأولوية']:'مهم',
+    owner:String(row['المسؤول']||row['Owner']||'غير محدد'),status:'pending',files:[],created:Date.now()});n++});
+  persist();render();toast(`تم استيراد ${n} مهمة ✅`)}catch(err){toast('تعذر قراءة الملف')}};r.readAsArrayBuffer(f);e.target.value=''}
+function downloadTemplate(){const ws=XLSX.utils.json_to_sheet([{'المهمة':'مثال: متابعة التقرير','الوصف':'تفاصيل','تاريخ التنفيذ':'2026-10-20','الأولوية':'مهم','المسؤول':'اسم المسؤول'}]);
+ const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'مهام');XLSX.writeFile(wb,'نموذج-استيراد-المهام.xlsx')}
+
+/* ===== reports ===== */
+function toggleReportMenu(){const m=document.getElementById('reportMenu');m.style.display=m.style.display==='none'?'flex':'none'}
+function rows(){return tasks.map(t=>({'المهمة':t.title,'الوصف':t.desc||'','تاريخ التنفيذ':t.date,'المتبقي (يوم)':t.status==='done'?'منجزة':daysLeft(t.date),'الأولوية':t.priority,'المسؤول':t.owner,'الحالة':t.status==='done'?'منجزة':daysLeft(t.date)<0?'متأخرة':'قيد التنفيذ','الشواهد':(t.files||[]).map(f=>f.name).join('، ')}))}
+function exportExcel(){if(!tasks.length)return toast('لا توجد مهام للتصدير');
+ const ws=XLSX.utils.json_to_sheet(rows());ws['!cols']=[{wch:30},{wch:25},{wch:14},{wch:12},{wch:14},{wch:16},{wch:12},{wch:25}];
+ const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'تقرير المهام');XLSX.writeFile(wb,'تقرير-مهام-تنمية-تندحة.xlsx');toast('تم تصدير Excel ✅')}
+function exportPDF(){if(!tasks.length)return toast('لا توجد مهام للتصدير');
+ try{const {jsPDF}=window.jspdf;const doc=new jsPDF({orientation:'landscape'});
+  doc.setFontSize(14);doc.text('Tanmiah Tandaha - Tasks Report',140,14,{align:'center'});
+  doc.setFontSize(10);doc.text(new Date().toLocaleString('ar-SA'),140,21,{align:'center'});
+  const head=[['Task','Date','Left','Priority','Owner','Status']];
+  const body=tasks.map(t=>[t.title,t.date,t.status==='done'?'Done':daysLeft(t.date),t.priority,t.owner,t.status==='done'?'Done':daysLeft(t.date)<0?'Overdue':'Pending']);
+  doc.autoTable({head,body,startY:26,styles:{fontSize:9},headStyles:{fillColor:[75,42,126]}});
+  doc.save('tasks-report-tandaha.pdf');toast('تم تصدير PDF ✅')}
+ catch(e){window.print()}}
+
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._x);t._x=setTimeout(()=>t.classList.remove('show'),2200)}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+document.getElementById('todayLabel').textContent=new Date().toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+document.getElementById('year').textContent=new Date().getFullYear();
+render();
+</script>
+</body>
+</html>
